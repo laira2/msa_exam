@@ -2,7 +2,10 @@ package com.sparta.msa_exam.order;
 
 import com.sparta.msa_exam.order.core.ProductClient;
 import com.sparta.msa_exam.order.core.ProductResponseDto;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -17,8 +21,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
 
-
-    public ResponseEntity<OrderResponseDto> createOrder(OrderRequestDto orderRequestDto) {
+    @CircuitBreaker(name = "orderService", fallbackMethod = "failbackCreateOrder")
+    public ResponseEntity<OrderResponseDto> createOrder(OrderRequestDto orderRequestDto,boolean fail) {
+        if (fail == true){
+            throw new RuntimeException("주문 생성 실패");
+        }
         Order order = new Order();
         List<ProductResponseDto> products = new ArrayList<>();
         for (Long productId : orderRequestDto.getProductsIdList()) {
@@ -30,6 +37,11 @@ public class OrderService {
         }
         orderRepository.save(order);
         return ResponseEntity.ok(OrderResponseDto.createOrderResponseDto(order,products));
+    }
+    public ResponseEntity<OrderResponseDto> failbackCreateOrder (OrderRequestDto orderRequestDto, boolean fail,  Throwable t) {
+        log.error("fail: {}", t.getMessage(), t);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new OrderResponseDto("잠시 후 다시 시도해주세요."));
     }
 
     @Transactional
@@ -73,4 +85,5 @@ public class OrderService {
         return ResponseEntity.ok(OrderResponseDto.createOrderResponseDto(order,products));
 
     }
+
 }

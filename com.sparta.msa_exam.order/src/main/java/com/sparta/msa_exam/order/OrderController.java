@@ -14,9 +14,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto orderRequestDto) {
-        return orderService.createOrder(orderRequestDto);
+    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto orderRequestDto,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean fail) {
+        return orderService.createOrder(orderRequestDto, fail);
     }
+
 
     @PutMapping("/{orderId}")
     public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long orderId,
