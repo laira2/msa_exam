@@ -20,14 +20,13 @@ public class ProductService {
         return ResponseEntity.ok(ProductResponseDto.createProductResponseDto(newProduct));
     }
 
-    public List<ProductResponseDto> getProducts(Long  productId, String name) {
+    public List<ProductResponseDto> getProducts(Long productId, String name) {
         List<Product> productList = new ArrayList<>();
         if (name != null && !name.isEmpty()) {
             productList = productRepository.findAllByName(name);
         } else if (productId != null) {
-
             productList.add(productRepository.findById(productId).orElseThrow(
-                    ()-> new IllegalArgumentException("Product id " + productId + " not found")
+                    ()-> new IllegalArgumentException( productId + " 에 해당하는 상품이 없습니다.")
             ));
         }else {
             productList = productRepository.findAll();

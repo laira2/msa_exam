@@ -15,14 +15,15 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto orderRequestDto) {
-        System.out.println("Received orderRequestDto: " + orderRequestDto);
         return orderService.createOrder(orderRequestDto);
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable("orderId") Long orderId,
-                                                        @RequestBody Long product_id) {
-        return orderService.updateOrder(orderId, product_id);
+    public ResponseEntity<OrderResponseDto> updateOrder(@PathVariable Long orderId,
+                                                        @RequestBody OrderRequestDto orderRequestDto) {
+        System.out.println("=========orderId : " +orderId + "=========");
+        System.out.println("=========orderRequestDto : " +orderRequestDto.getProductsIdList() + "=========");
+        return orderService.updateOrder(orderId, orderRequestDto.getProductsIdList());
     }
 
     @GetMapping("/{orderId}")
